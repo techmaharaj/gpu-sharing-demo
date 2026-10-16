@@ -1,0 +1,45 @@
+# Chat pod: llama.cpp server (CUDA 12 build) + Qwen3 1.7B Q8_0, thinking off, its own web page.
+# chat.yaml = without HAMi, chat-hami.yaml = with HAMi: the two files differ only in the lines marked ◀.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat
+  namespace: demo
+spec:
+  replicas: 1
+  strategy: { type: Recreate }   # one GPU: the old pod lets go before the new one starts
+  selector: { matchLabels: { app: chat } }
+  template:
+    metadata:
+      labels:
+        app: chat
+        hami.io/webhook: ignore   # ◀ without HAMi: its webhook leaves this pod alone (plain Kubernetes)
+    spec:
+      terminationGracePeriodSeconds: 5   # nothing to save; a quick stop frees the GPU
+      containers:
+        - name: llama
+          image: ghcr.io/ggml-org/llama.cpp:server-cuda12-b11515@sha256:ccfd96bb2aba4ef77e3df656d713ce85bf3c6a886d7974243127c5ad66ca6d2a
+          env:   # llama-server reads its flags from LLAMA_ARG_*
+            - { name: LLAMA_ARG_MODEL, value: /models/Qwen3-1.7B-Q8_0.gguf }
+            - { name: LLAMA_ARG_ALIAS, value: qwen3-1.7b }
+            - { name: LLAMA_ARG_N_GPU_LAYERS, value: "999" }   # whole model on the GPU
+            - { name: LLAMA_ARG_CTX_SIZE, value: "8192" }
+            - { name: LLAMA_ARG_N_PARALLEL, value: "1" }
+            - { name: LLAMA_ARG_JINJA, value: "1" }
+            - { name: LLAMA_ARG_CHAT_TEMPLATE_KWARGS, value: '{"enable_thinking":false}' }   # "hi" gets an instant "hi"
+            - { name: LLAMA_ARG_HOST, value: 0.0.0.0 }
+            - { name: LLAMA_ARG_PORT, value: "8080" }
+            - { name: TZ, value: IST-5:30 }   # POSIX form, no tzdata needed: set yours so nvidia-smi in the pod matches the host
+          ports: [{ name: http, containerPort: 8080 }]
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 2
+            failureThreshold: 150
+          resources:
+            limits:
+              nvidia.com/gpu: 1   # one GPU
+          volumeMounts:
+            - { name: models, mountPath: /models, readOnly: true }
+      volumes:
+        - name: models
+          hostPath: { path: /srv/models/qwen3-1.7b, type: Directory }

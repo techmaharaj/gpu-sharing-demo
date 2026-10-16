@@ -1,0 +1,14 @@
+# The scheduler's "no": with chat (4000) + image (10000) running, 2311 MiB of the card are left. This pod
+# asks for a 4000 MiB slice, so HAMi's scheduler refuses to place it: Pending, before anything runs. (greedy.yaml
+# is the other "no": it gets a slice, then tries to use more than it.) Same image as chat, so nothing to pull.
+apiVersion: v1
+kind: Pod
+metadata: { name: too-big, namespace: demo }
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: wait
+      image: ghcr.io/ggml-org/llama.cpp:server-cuda12-b11515@sha256:ccfd96bb2aba4ef77e3df656d713ce85bf3c6a886d7974243127c5ad66ca6d2a
+      command: ["sleep", "infinity"]
+      resources:
+        limits: { nvidia.com/gpu: 1, nvidia.com/gpumem: 4000 }   # 4 GB asked, 2.3 GB free

@@ -1,0 +1,10 @@
+# Models for the GPU sharing demo, pinned to a Hugging Face commit and checked by SHA-256.
+# fetch-models.sh downloads the missing ones to /srv/models (none of these repos are gated).
+# <path under /srv/models>  <HF repo>  <commit>  <file in repo>  <sha256>
+# Chat: Qwen3 1.7B Q8_0 (1.83G)
+qwen3-1.7b/Qwen3-1.7B-Q8_0.gguf              Qwen/Qwen3-1.7B-GGUF    90862c4b9d2787eaed51d12237eafdfe7c5f6077  Qwen3-1.7B-Q8_0.gguf              061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a
+# Image: SDXL-Turbo fp16 (6.94G)
+sdxl-turbo/sd_xl_turbo_1.0_fp16.safetensors  stabilityai/sdxl-turbo  71153311d3dbb46851df1931d3ca6e939de83304  sd_xl_turbo_1.0_fp16.safetensors  e869ac7d6942cb327d68d5ed83a40447aadf20e0c3358d98b2cc9e270db0da26
+# Smaller fallbacks (not used by the manifests; uncomment to download).
+#qwen3-4b/Qwen3-4B-Q4_K_M.gguf               Qwen/Qwen3-4B-GGUF      bc640142c66e1fdd12af0bd68f40445458f3869b  Qwen3-4B-Q4_K_M.gguf              7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+#sd-turbo/sd_turbo.safetensors               stabilityai/sd-turbo    b261bac6fd2cf515557d5d0707481eafa0485ec2  sd_turbo.safetensors              3f067a1b943cf162f2b8f8588f6cf5824bd5b4c7d1d88d87164b9ca123616549

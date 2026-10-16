@@ -1,0 +1,30 @@
+# The fence: a "greedy" pod with a 2000 MiB slice loads the chat model with
+# llama.cpp's auto-fit off and an 8K context, which needs ~3 GB of GPU memory. HAMi-core refuses the
+# allocation (CUDA out of memory), the pod ends in Error, and chat + image carry on. Same test as
+# k8s/fence-test.yaml. Slices then: chat 4000 + image 10000 + greedy 2000 = 16000 of the card's 16311 MiB.
+apiVersion: v1
+kind: Pod
+metadata: { name: greedy, namespace: demo }
+spec:
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 5
+  containers:
+    - name: greedy
+      image: ghcr.io/ggml-org/llama.cpp:server-cuda12-b11515@sha256:ccfd96bb2aba4ef77e3df656d713ce85bf3c6a886d7974243127c5ad66ca6d2a
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "greedy: my slice is $(nvidia-smi --query-gpu=memory.total --format=csv,noheader); loading a model that needs ~3 GB"
+          /app/llama-server -m /models/Qwen3-1.7B-Q8_0.gguf -ngl 999 --fit off -c 8192 --port 8080 & p=$!
+          for i in $(seq 120); do
+            curl -sf localhost:8080/health >/dev/null && { echo "greedy: GOT IT (no fence!)"; kill $p; exit 0; }
+            kill -0 $p 2>/dev/null || { echo "greedy: REFUSED, out of GPU memory"; exit 1; }
+            sleep 1
+          done; exit 2
+      env: [{ name: TZ, value: IST-5:30 }]   # set yours, as in chat.yaml
+      resources:
+        limits: { nvidia.com/gpu: 1, nvidia.com/gpumem: 2000 }   # the 2 GB left on the card
+      volumeMounts: [{ name: models, mountPath: /models, readOnly: true }]
+  volumes:
+    - name: models
+      hostPath: { path: /srv/models/qwen3-1.7b, type: Directory }

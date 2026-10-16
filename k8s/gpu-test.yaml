@@ -1,0 +1,17 @@
+# Setup check: a pod asking for the whole GPU runs nvidia-smi (needs the NVIDIA device plugin, i.e. without HAMi).
+# Uses the llama image (already pulled for chat, CUDA 12 userland); nvidia-smi comes from the runtime.
+#   sudo k3s kubectl apply -f gpu-test.yaml && sudo k3s kubectl logs -f pod/gpu-test; then delete it
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-test
+  namespace: default
+spec:
+  restartPolicy: Never
+  containers:
+    - name: smi
+      image: ghcr.io/ggml-org/llama.cpp:server-cuda12-b11515@sha256:ccfd96bb2aba4ef77e3df656d713ce85bf3c6a886d7974243127c5ad66ca6d2a
+      command: ["nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1

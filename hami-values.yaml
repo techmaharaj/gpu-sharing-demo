@@ -1,0 +1,33 @@
+# HAMi v2.10.0 Helm values for the demo. Every image pinned by digest (the chart
+# builds registry/repository:tag, so tag carries the digest). Rest = chart defaults: device plugin on
+# nodes labelled gpu=on, 10 slices per GPU, memory fenced by HAMi-core, binpack/spread policies.
+scheduler:
+  kubeScheduler:
+    image:              # must match k3s's Kubernetes version (versions.env KUBE_VERSION, hami.sh checks)
+      registry: registry.k8s.io
+      repository: kube-scheduler
+      tag: "v1.35.9@sha256:d96574ba699bc887eeefcc05d9f7828b4df5ba75feac6f20b98097aa85d1ed22"
+  extender:
+    image:
+      registry: docker.io
+      repository: projecthami/hami
+      tag: "v2.10.0@sha256:8c45cd84d8df3e6a8fe8c95e0141684973b5015692a0ef87588da05284f34447"
+  patch:
+    image:
+      registry: docker.io
+      repository: jettech/kube-webhook-certgen
+      tag: "v1.5.2@sha256:2217d8028431f82afef26b0023ff8b9247971be3964a22e80ef5ca2f36e1a293"
+    imageNew:
+      registry: docker.io
+      repository: liangjw/kube-webhook-certgen
+      tag: "v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660"
+devicePlugin:
+  image:
+    registry: docker.io
+    repository: projecthami/hami
+    tag: "v2.10.0@sha256:8c45cd84d8df3e6a8fe8c95e0141684973b5015692a0ef87588da05284f34447"
+  monitor:
+    image:
+      registry: docker.io
+      repository: projecthami/hami
+      tag: "v2.10.0@sha256:8c45cd84d8df3e6a8fe8c95e0141684973b5015692a0ef87588da05284f34447"

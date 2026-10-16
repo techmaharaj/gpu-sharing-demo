@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly download of the GPU sharing demo's missing models (only with NIGHT_ONLY=1 setup.sh)
+
+[Timer]
+# 00:15 in the machine's time zone, nightly while it's on; does nothing once every file in models.lock is there.
+OnCalendar=*-*-* 00:15:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

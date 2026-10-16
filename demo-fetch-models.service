@@ -1,0 +1,12 @@
+[Unit]
+Description=Download the GPU sharing demo's missing models (models.lock), night window only
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=MODELS_DIR=/srv/models NIGHT_ONLY=1
+# setup.sh rewrites this path to where the repo is cloned
+ExecStart=/opt/gpu-sharing-demo/fetch-models.sh
+Nice=10
+IOSchedulingClass=idle
